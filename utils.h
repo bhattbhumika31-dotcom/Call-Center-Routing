@@ -1,9 +1,18 @@
-#ifndef UTILS_h
-#define UTILS_h
-#include"routing.h"
+#ifndef UTILS_H
+#define UTILS_H
 
-void addOperator(OperatorNode **root, int id);
-void removeOperator(OperatorNode **root, int id);
-void operatorStatus(OperatorNode *root);
-OperatorNode* linearSearch(OperatorNode *root, int target);
-#endif
+#include "routing.h" // Needed for OperatorNode structure in reassignment function
+
+#define MAX 100 
+
+// --- Queue Function Declarations ---
+void enqueue(int value);
+// Modified dequeue to return the value (or -1) for cleaner reassignment logic
+int dequeue(); 
+void display();
+int isQueueNotEmpty(); 
+
+// --- Queue Reassignment Logic ---
+void attempt_reassign_from_queue(OperatorNode *freed_operator); 
+
+#endif // UTILS_H

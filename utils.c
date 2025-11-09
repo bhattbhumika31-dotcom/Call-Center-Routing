@@ -1,81 +1,95 @@
-#include<stdio.h>
-#include<time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "utils.h"
+#include "routing.h"
 #include <windows.h>
-#include"routing.h"
-#include"utils.h"
 
+#define MAX 100 // Defined here and in utils.h
 
+// Global Queue Variables (Externally declared in utils.h)
+int queue[MAX];
+int front = -1;
+int rear = -1;
 
-int timer(int duration){
-    time_t start = time(NULL);
-    while (1) {
-        time_t now = time(NULL);
-        if (difftime(now, start) >= duration) {
-            printf("\nTime's up!");
-            break;
-        }
+// --- Queue Operations (Copied from your original routing.c block) ---
+
+int isQueueNotEmpty() {
+    return front != -1;
+}
+
+void enqueue(int value) 
+{
+    if ((front == 0 && rear == MAX - 1) || ((rear + 1) % MAX == front)) {
+        printf("\nQueue Overflow! Cannot insert %d", value);
+        return;
     }
-    return 1;
+    if (front == -1) {
+        front = 0;
+        rear = 0;
+    }
+    else {
+        rear = (rear + 1) % MAX;
+    }
+
+    queue[rear] = value;
+    printf("\n%d enqueued to the queue.", value);
 }
 
-void addOperator(OperatorNode **root, int id) {
-	// Check for duplicate ID first using linearSearch
-	if (linearSearch(*root, id) != NULL) {
-		printf("\nperator %d already exists. Not adding duplicate.", id);
-		return;
-	}
+int dequeue() {
+    int value = -1; 
+    if (front == -1) {
+        // printf("\nQueue Underflow! Cannot dequeue."); // Removed loud error for internal use
+        return value;
+    }
 
-	// Append new node
-	OperatorNode *node = malloc(sizeof(OperatorNode));
-	if (!node) return;
-	node->id = id;
-	node->status = 0; // default free
-	node->callTime = 0;
-	node->next = NULL;
-	if (*root == NULL) {
-		*root = node;
-	} else {
-		OperatorNode *cur = *root;
-		while (cur->next) cur = cur->next;
-		cur->next = node;
-	}
-	printf("\nAdded operator %d\n", id);
+    value = queue[front];
+    printf("\n%d dequeued from the queue.", value); 
+    
+    if (front == rear) {
+        front = -1;
+        rear = -1;
+    }
+    else {
+        front = (front + 1) % MAX;
+    }
+    return value;
 }
 
-void removeOperator(OperatorNode **root, int id) {
-	OperatorNode *cur = *root;
-	OperatorNode *prev = NULL;
-	while (cur) {
-		if (cur->id == id) {
-			if (prev) prev->next = cur->next;
-			else *root = cur->next;
-			free(cur);
-			printf("\nRemoved operator %d", id);
-			return;
-		}
-		prev = cur;
-		cur = cur->next;
-	}
-	printf("\nOperator %d not found", id);
+void display() {
+    if (front == -1) {
+        printf("Queue is empty.\n");
+        return;
+    }
+
+    printf("Queue elements: ");
+    int i = front;
+    while (1) {
+        printf("%d ", queue[i]);
+        if (i == rear)
+            break;
+        i = (i + 1) % MAX;
+    }
+    printf("\n");
 }
 
-void operatorStatus(OperatorNode *root) {
-	if (!root) {
-		printf("\nNo operators present.");
-		return;
-	}
-	printf("Operator list:\n");
-	for (OperatorNode *cur = root; cur; cur = cur->next) {
-		printf("\n[+] Showing details of operator  %d", cur->id);
-        if(cur->status==0) printf("\n===>current status is free\n");
-        else printf("\n===>current status is busy");
-        if(cur->status!=0) printf("\n===>Call duration remaninig: %d seconds\n",cur->callTime);
-	}
-}
+// --- Reassignment Logic ---
 
-OperatorNode* linearSearch(OperatorNode *root, int target) {
-	for (OperatorNode *cur = root; cur; cur = cur->next) {
-		if (cur->id == target) return cur;
-	}
-	return NULL;
+// Called by TimerThread in routing.c when an operator becomes free
+void attempt_reassign_from_queue(OperatorNode *freed_operator) {
+    if (!freed_operator || freed_operator->status == 1) {
+        return;
+    }
+    
+    int call_time = dequeue();
+    
+    if (call_time != -1) {
+        // Assign the dequeued call to the newly freed operator
+        freed_operator->status = 1; // busy
+        freed_operator->callTime = call_time; 
+        printf("\n[QUEUE REROUTE] Assigned call from queue (duration %d) to operator %d\n", call_time, freed_operator->id);
+        
+        // Start a new timer thread for this operator with the new call time
+        HANDLE hThread = CreateThread(NULL, 0, TimerThread, freed_operator, 0, NULL);
+        if (hThread) CloseHandle(hThread);
+    }
 }

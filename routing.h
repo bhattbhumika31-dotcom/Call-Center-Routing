@@ -1,17 +1,26 @@
-// routing.h - declarations for operator routing management
 #ifndef ROUTING_H
 #define ROUTING_H
 
-// Example node structure for operators (can be expanded later)
+#include <windows.h> // Required for TimerThread definition
+
+// --- Data Structure Definition ---
 typedef struct OperatorNode {
-	int id;
+    int id;
     int status;
     int callTime;
-	struct OperatorNode *next;
+    struct OperatorNode *next;
 } OperatorNode;
 
+// --- Threading Helper (Defined in routing.c) ---
+DWORD WINAPI TimerThread(LPVOID param); 
 
-// Assign an incoming call to a free operator. Pass pointer to root so function may modify list.
+// --- Operator Management Functions (Moved from your original utils.h) ---
+void addOperator(OperatorNode **root, int id);
+void removeOperator(OperatorNode **root, int id);
+void operatorStatus(OperatorNode *root);
+OperatorNode* linearSearch(OperatorNode *root, int target); // Helper function
+
+// --- Core Routing Function ---
 void assignCall(OperatorNode **root, int time);
 
 #endif // ROUTING_H
