@@ -3,9 +3,8 @@
 #include "routing.h"
 #include "utils.h"
 #include <windows.h>
-#include <time.h> // Included for potential use, though Sleep is used
-
-// --- Global Queue Variables (Removed from here, now in utils.c) ---
+#include <string.h>
+#include <time.h> 
 
 // --- Timer Thread Implementation (Modified to check the queue) ---
 DWORD WINAPI TimerThread(LPVOID param) 
@@ -17,84 +16,142 @@ DWORD WINAPI TimerThread(LPVOID param)
     node->status = 0;
     node->callTime = 0;
     
-    // Check if the queue has calls and reassign immediately
-    if (isQueueNotEmpty()) {
-        printf("\nOperator %d is now FREE. Checking queue for waiting calls...\n", node->id);
-        attempt_reassign_from_queue(node); 
+    // Attempt to reassign a queued call to this now-free operator.
+    // attempt_reassign_from_queue will dequeue and start a timer if assignment occurs.
+    if (attempt_reassign_from_queue(node)) {
+        // assignment message is printed inside attempt_reassign_from_queue
     } else {
-        printf("\nOperator %d is now FREE. No waiting calls.\n", node->id);
+        printf("\nOperator %d (%s) is now FREE. No waiting calls.\n", node->id, node->name);
     }
     return 0;
 }
 
-// --- Core Routing Function ---
+// --- BST Helper Functions ---
+
+static OperatorNode* find_min(OperatorNode *node) {
+    if (!node) return NULL;
+    while (node->left) node = node->left;
+    return node;
+}
+
+static OperatorNode* insert_node(OperatorNode *root, int id, const char *name) {
+    if (!root) {
+        OperatorNode *node = malloc(sizeof(OperatorNode));
+        if (!node) return NULL;
+        node->id = id;
+        node->status = 0;
+        node->callTime = 0;
+        if (name) {
+            strncpy(node->name, name, sizeof(node->name) - 1);
+            node->name[sizeof(node->name) - 1] = '\0';
+        } else node->name[0] = '\0';
+        node->left = node->right = NULL;
+        return node;
+    }
+    if (id < root->id) root->left = insert_node(root->left, id, name);
+    else if (id > root->id) root->right = insert_node(root->right, id, name);
+    else printf("\nOperator %d already exists. Not adding duplicate.", id);
+    return root;
+}
+
+static OperatorNode* delete_node(OperatorNode *root, int id) {
+    if (!root) return NULL;
+    if (id < root->id) root->left = delete_node(root->left, id);
+    else if (id > root->id) root->right = delete_node(root->right, id);
+    else {
+        // found node to delete
+        if (!root->left) {
+            OperatorNode *r = root->right;
+            free(root);
+            return r;
+        } else if (!root->right) {
+            OperatorNode *l = root->left;
+            free(root);
+            return l;
+        } else {
+            OperatorNode *succ = find_min(root->right);
+            // copy successor data into root
+            root->id = succ->id;
+            strncpy(root->name, succ->name, sizeof(root->name) - 1);
+            root->name[sizeof(root->name) - 1] = '\0';
+            root->status = succ->status;
+            root->callTime = succ->callTime;
+            // delete successor node
+            root->right = delete_node(root->right, succ->id);
+        }
+    }
+    return root;
+}
+
+// Public: search by id using DFS (preorder)
+OperatorNode* DFS(OperatorNode *root, int target) {
+    if (!root) return NULL;
+    if (root->id == target) return root;
+    OperatorNode *res = DFS(root->left, target);
+    if (res) return res;
+    return DFS(root->right, target);
+}
+
+void addOperator(OperatorNode **root, int id, const char *name) {
+    if (!root) return;
+    if (DFS(*root, id) != NULL) {
+        printf("\nOperator %d already exists. Not adding duplicate.", id);
+        return;
+    }
+    *root = insert_node(*root, id, name);
+    OperatorNode *just = DFS(*root, id);
+    if (just) printf("\nAdded operator %d (%s)\n", id, just->name);
+}
+
+void removeOperator(OperatorNode **root, int id) {
+    if (!root || !*root) { printf("\nOperator %d not found", id); return; }
+    OperatorNode *found = DFS(*root, id);
+    if (!found) { printf("\nOperator %d not found", id); return; }
+    char saved_name[64];
+    strncpy(saved_name, found->name, sizeof(saved_name) - 1);
+    saved_name[sizeof(saved_name) - 1] = '\0';
+    *root = delete_node(*root, id);
+    printf("\nRemoved operator %d (%s)", id, saved_name);
+}
+
+// find the first FREE operator using inorder traversal (smallest id free)
+OperatorNode* find_free_operator(OperatorNode *root) {
+    if (!root) return NULL;
+    OperatorNode *left = find_free_operator(root->left);
+    if (left) return left;
+    if (root->status == 0) return root;
+    return find_free_operator(root->right);
+}
 
 void assignCall(OperatorNode **root,int time) {
     if (!root || !*root) {
         printf("\nNo operators available to assign the call.");
         return;
     }
-    for (OperatorNode *cur = *root; cur; cur = cur->next) {
-        if (cur->status == 0) {
-            cur->status = 1; // busy
-            cur->callTime = time; 
-            printf("\nAssigned call to operator %d (duration %d seconds)\n", cur->id, cur->callTime);
-            HANDLE hThread = CreateThread(NULL, 0, TimerThread, cur, 0, NULL);
-            if (hThread) CloseHandle(hThread);
-            return;
-        }
+    OperatorNode *free_op = find_free_operator(*root);
+    if (free_op) {
+        free_op->status = 1;
+        free_op->callTime = time;
+        printf("\nAssigned call to operator %d (%s) (duration %d seconds)\n", free_op->id, free_op->name, free_op->callTime);
+        HANDLE hThread = CreateThread(NULL, 0, TimerThread, free_op, 0, NULL);
+        if (hThread) CloseHandle(hThread);
+        return;
     }
-    // Call enqueue (now defined in utils.c)
     enqueue(time);
     printf("\nAll operators are busy; call duration %d enqueued.", time);
 }
 
-// --- Operator Management Functions (Moved from your original utils.c block) ---
-
-OperatorNode* linearSearch(OperatorNode *root, int target) {
-    for (OperatorNode *cur = root; cur; cur = cur->next) {
-        if (cur->id == target) return cur;
+// inorder helper that prints nodes (no header)
+static void operatorStatus_inorder(OperatorNode *root) {
+    if (!root) return;
+    operatorStatus_inorder(root->left);
+    printf("\n[+] Showing details of operator  %d (%s)", root->id, root->name);
+    if(root->status==0) printf("\n===>Current status is FREE\n");
+    else {
+        printf("\n===>Current status is BUSY");
+        printf("\n===>Call duration remaining: %d seconds\n",root->callTime);
     }
-    return NULL;
-}
-
-void addOperator(OperatorNode **root, int id) {
-    if (linearSearch(*root, id) != NULL) {
-        printf("\nOperator %d already exists. Not adding duplicate.", id);
-        return;
-    }
-
-    OperatorNode *node = malloc(sizeof(OperatorNode));
-    if (!node) return;
-    node->id = id;
-    node->status = 0; 
-    node->callTime = 0;
-    node->next = NULL;
-    if (*root == NULL) {
-        *root = node;
-    } else {
-        OperatorNode *cur = *root;
-        while (cur->next) cur = cur->next;
-        cur->next = node;
-    }
-    printf("\nAdded operator %d\n", id);
-}
-
-void removeOperator(OperatorNode **root, int id) {
-    OperatorNode *cur = *root;
-    OperatorNode *prev = NULL;
-    while (cur) {
-        if (cur->id == id) {
-            if (prev) prev->next = cur->next;
-            else *root = cur->next;
-            free(cur);
-            printf("\nRemoved operator %d", id);
-            return;
-        }
-        prev = cur;
-        cur = cur->next;
-    }
-    printf("\nOperator %d not found", id);
+    operatorStatus_inorder(root->right);
 }
 
 void operatorStatus(OperatorNode *root) {
@@ -103,12 +160,12 @@ void operatorStatus(OperatorNode *root) {
         return;
     }
     printf("Operator list:\n");
-    for (OperatorNode *cur = root; cur; cur = cur->next) {
-        printf("\n[+] Showing details of operator  %d", cur->id);
-        if(cur->status==0) printf("\n===>Current status is FREE\n");
-        else {
-            printf("\n===>Current status is BUSY");
-            printf("\n===>Call duration remaining: %d seconds\n",cur->callTime);
-        }
-    }
+    operatorStatus_inorder(root);
+}
+
+void free_tree(OperatorNode *root) {
+    if (!root) return;
+    free_tree(root->left);
+    free_tree(root->right);
+    free(root);
 }

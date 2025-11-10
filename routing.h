@@ -8,17 +8,21 @@ typedef struct OperatorNode {
     int id;
     int status;
     int callTime;
-    struct OperatorNode *next;
+    char name[64];
+    struct OperatorNode *left;
+    struct OperatorNode *right;
 } OperatorNode;
 
 // --- Threading Helper (Defined in routing.c) ---
 DWORD WINAPI TimerThread(LPVOID param); 
 
 // --- Operator Management Functions (Moved from your original utils.h) ---
-void addOperator(OperatorNode **root, int id);
+void addOperator(OperatorNode **root, int id, const char *name);
 void removeOperator(OperatorNode **root, int id);
 void operatorStatus(OperatorNode *root);
-OperatorNode* linearSearch(OperatorNode *root, int target); // Helper function
+OperatorNode* DFS(OperatorNode *root, int target); // Helper function
+OperatorNode* find_free_operator(OperatorNode *root); // find a FREE operator (status==0)
+void free_tree(OperatorNode *root); // free entire tree
 
 // --- Core Routing Function ---
 void assignCall(OperatorNode **root, int time);

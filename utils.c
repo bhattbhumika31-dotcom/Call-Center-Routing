@@ -75,9 +75,10 @@ void display() {
 // --- Reassignment Logic ---
 
 // Called by TimerThread in routing.c when an operator becomes free
-void attempt_reassign_from_queue(OperatorNode *freed_operator) {
+// Returns 1 if a queued call was assigned to freed_operator, 0 otherwise
+int attempt_reassign_from_queue(OperatorNode *freed_operator) {
     if (!freed_operator || freed_operator->status == 1) {
-        return;
+        return 0;
     }
     
     int call_time = dequeue();
@@ -86,10 +87,12 @@ void attempt_reassign_from_queue(OperatorNode *freed_operator) {
         // Assign the dequeued call to the newly freed operator
         freed_operator->status = 1; // busy
         freed_operator->callTime = call_time; 
-        printf("\n[QUEUE REROUTE] Assigned call from queue (duration %d) to operator %d\n", call_time, freed_operator->id);
+        printf("\n[QUEUE REROUTE] Assigned call from queue (duration %d) to operator %d (%s)\n", call_time, freed_operator->id, freed_operator->name);
         
         // Start a new timer thread for this operator with the new call time
         HANDLE hThread = CreateThread(NULL, 0, TimerThread, freed_operator, 0, NULL);
         if (hThread) CloseHandle(hThread);
+        return 1;
     }
+    return 0;
 }
