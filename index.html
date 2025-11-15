@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Center Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        /* Login Page Styles */
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 450px;
+            margin: 0 auto;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .login-header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .login-body {
+            padding: 40px 30px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .admin-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .admin-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Dashboard Styles */
+        .dashboard {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: none;
+        }
+
+        .dashboard.active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-header h1 {
+            font-size: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logout-btn {
+            padding: 8px 20px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .dashboard-body {
+            padding: 30px;
+        }
+
+        .action-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .action-btn {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-add { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .btn-remove { background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%); }
+        .btn-status { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .btn-assign { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .btn-queue { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333; }
+
+        .content-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: slideInContent 0.4s ease-out;
+        }
+
+        @keyframes slideInContent {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .content-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: flex-end;
+        }
+
+        .input-group {
+            flex: 1;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .execute-btn {
+            padding: 10px 25px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .execute-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .execute-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .operator-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .operator-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .operator-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .operator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .operator-id {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-free {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-busy {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .operator-name {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .call-time {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .queue-display {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .queue-items {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .queue-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .message {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .message-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Admin Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #667eea;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .pending-user {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pending-user-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .pending-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .approve-btn, .reject-btn {
+            padding: 6px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .approve-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .approve-btn:hover {
+            background: #218838;
+        }
+
+        .reject-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .reject-btn:hover {
+            background: #c82333;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .action-panel {
+                grid-template-columns: 1fr;
+            }
+
+            .input-row {
+                flex-direction: column;
+            }
+
+            .operator-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Page -->
+        <div class="login-container" id="loginPage">
+            <div class="login-header">
+                <h1>📞 Call Center System</h1>
+                <p>Routing & Management Platform</p>
+            </div>
+            <div class="login-body">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+                    <button class="tab-btn" onclick="switchTab('register')">Register</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="loginUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="submit-btn" id="loginBtn">Login</button>
+                </form>
+
+                <!-- Register Form -->
+                <form id="registerForm" class="hidden" onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="regUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="regPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <input type="password" id="regConfirmPassword" required>
+                    </div>
+                    <button type="submit" class="submit-btn" id="registerBtn">Register</button>
+                </form>
+
+                <div class="admin-link" onclick="showAdminModal()">
+                    Admin Approval Portal →
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div class="dashboard" id="dashboard">
+            <div class="dashboard-header">
+                <h1>📞 Call Center Dashboard</h1>
+                <div class="user-info">
+                    <span>Welcome, <strong id="currentUser">User</strong></span>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </div>
+            <div class="dashboard-body">
+                <div class="action-panel">
+                    <button class="action-btn btn-add" onclick="showSection('addOperator')">➕ Add Operator</button>
+                    <button class="action-btn btn-remove" onclick="showSection('removeOperator')">➖ Remove Operator</button>
+                    <button class="action-btn btn-status" onclick="showOperatorStatus()">📊 Operator Status</button>
+                    <button class="action-btn btn-assign" onclick="showSection('assignCall')">📞 Assign Call</button>
+                    <button class="action-btn btn-queue" onclick="showQueueStatus()">⏳ Queue Status</button>
+                </div>
+
+                <!-- Add Operator Section -->
+                <div class="content-section" id="addOperator">
+                    <h2>➕ Add New Operator</h2>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Operator ID</label>
+                            <input type="text" id="addOpId" placeholder="Enter ID">
+                        </div>
+                        <div class="input-group">
+                            <label>Operator Name</label>
+                            <input type="text" id="addOpName" placeholder="Enter name">
+                        </div>
+                        <button class="execute-btn" onclick="addOperator()">Add</button>
+                    </div>
+                    <div id="addOpMessage"></div>
+                </div>
+
+                <!-- Remove Operator Section -->
+                <div class="content-section" id="removeOperator">
+                    <h2>➖ Remove Operator</h2>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Operator ID</label>
+                            <input type="text" id="removeOpId" placeholder="Enter ID to remove">
+                        </div>
+                        <button class="execute-btn" onclick="removeOperator()">Remove</button>
+                    </div>
+                    <div id="removeOpMessage"></div>
+                </div>
+
+                <!-- Assign Call Section -->
+                <div class="content-section" id="assignCall">
+                    <h2>📞 Assign Call</h2>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Call Duration (seconds)</label>
+                            <input type="number" id="callDuration" placeholder="Enter duration" min="1">
+                        </div>
+                        <button class="execute-btn" onclick="assignCall()">Assign</button>
+                    </div>
+                    <div id="assignCallMessage"></div>
+                </div>
+
+                <!-- Operator Status Section -->
+                <div class="content-section" id="operatorStatus">
+                    <h2>📊 Operator Status</h2>
+                    <div class="operator-list" id="operatorList"></div>
+                </div>
+
+                <!-- Queue Status Section -->
+                <div class="content-section" id="queueStatus">
+                    <h2>⏳ Call Queue Status</h2>
+                    <div class="queue-display">
+                        <h3>Waiting Calls</h3>
+                        <div class="queue-items" id="queueItems"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Modal -->
+    <div class="modal" id="adminModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>👨‍💼 Admin Approval Portal</h2>
+                <button class="close-btn" onclick="closeAdminModal()">×</button>
+            </div>
+            
+            <div id="adminLoginSection">
+                <form onsubmit="handleAdminLogin(event)">
+                    <div class="form-group">
+                        <label>Admin Username</label>
+                        <input type="text" id="adminUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Admin Password</label>
+                        <input type="password" id="adminPassword" required>
+                    </div>
+                    <button type="submit" class="submit-btn">Access Admin Panel</button>
+                </form>
+            </div>
+
+            <div id="adminPanelSection" class="hidden">
+                <h3>Pending User Registrations</h3>
+                <div id="pendingUsersList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let currentUsername = '';
+        let statusUpdateInterval = null;
+
+        // ==================== TAB SWITCHING ====================
+        function switchTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const tabs = document.querySelectorAll('.tab-btn');
+
+            tabs.forEach(t => t.classList.remove('active'));
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                tabs[0].classList.add('active');
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                tabs[1].classList.add('active');
+            }
+        }
+
+        // ==================== AUTHENTICATION ====================
+        async function handleLogin(event) {
+            event.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.textContent = 'Logging in...';
+
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username, password})
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentUsername = username;
+                    document.getElementById('currentUser').textContent = username;
+                    document.getElementById('loginPage').style.display = 'none';
+                    document.getElementById('dashboard').classList.add('active');
+                    
+                    // Start auto-refresh for operator status
+                    startStatusUpdates();
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert('Error connecting to server. Make sure the Flask backend is running.');
+                console.error(error);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Login';
+            }
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+            const btn = document.getElementById('registerBtn');
+            btn.disabled = true;
+            btn.textContent = 'Registering...';
+
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username, password, confirmPassword})
+                });
+
+                const data = await response.json();
+                alert(data.message);
+
+                if (data.success) {
+                    switchTab('login');
+                    document.getElementById('registerForm').reset();
+                }
+            } catch (error) {
+                alert('Error connecting to server. Make sure the Flask backend is running.');
+                console.error(error);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Register';
+            }
+        }
+
+        function logout() {
+            stopStatusUpdates();
+            document.getElementById('dashboard').classList.remove('active');
+            document.getElementById('loginPage').style.display = 'block';
+            document.getElementById('loginForm').reset();
+            currentUsername = '';
+        }
+
+        // ==================== ADMIN MODAL ====================
+        function showAdminModal() {
+            document.getElementById('adminModal').classList.add('active');
+            document.getElementById('adminLoginSection').classList.remove('hidden');
+            document.getElementById('adminPanelSection').classList.add('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.remove('active');
+            document.getElementById('adminUsername').value = '';
+            document.getElementById('adminPassword').value = '';
+        }
+
+        async function handleAdminLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/admin/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username, password})
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('adminLoginSection').classList.add('hidden');
+                    document.getElementById('adminPanelSection').classList.remove('hidden');
+                    loadPendingUsers();
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert('Error connecting to server.');
+                console.error(error);
+            }
+        }
+
+        async function loadPendingUsers() {
+            try {
+                const response = await fetch(`${API_URL}/admin/pending`);
+                const data = await response.json();
+
+                const listDiv = document.getElementById('pendingUsersList');
+                
+                if (data.pending.length === 0) {
+                    listDiv.innerHTML = '<p style="text-align: center; color: #666;">No pending registrations</p>';
+                    return;
+                }
+
+                listDiv.innerHTML = data.pending.map(user => `
+                    <div class="pending-user">
+                        <span class="pending-user-name">👤 ${user.username}</span>
+                        <div class="pending-actions">
+                            <button class="approve-btn" onclick="approveUser('${user.username}')">✓ Approve</button>
+                            <button class="reject-btn" onclick="rejectUser('${user.username}')">✗ Reject</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading pending users:', error);
+            }
+        }
+
+        async function approveUser(username) {
+            try {
+                const response = await fetch(`${API_URL}/admin/approve`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username})
+                });
+
+                const data = await response.json();
+                alert(data.message);
+                loadPendingUsers();
+            } catch (error) {
+                alert('Error approving user');
+                console.error(error);
+            }
+        }
+
+        async function rejectUser(username) {
+            try {
+                const response = await fetch(`${API_URL}/admin/reject`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username})
+                });
+
+                const data = await response.json();
+                alert(data.message);
+                loadPendingUsers();
+            } catch (error) {
+                alert('Error rejecting user');
+                console.error(error);
+            }
+        }
+
+        // ==================== SECTION MANAGEMENT ====================
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        // ==================== OPERATOR MANAGEMENT ====================
+        async function addOperator() {
+            const id = document.getElementById('addOpId').value;
+            const name = document.getElementById('addOpName').value;
+            const messageDiv = document.getElementById('addOpMessage');
+
+            if (!id || !name) {
+                showMessage(messageDiv, 'Please fill all fields!', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/operator/add`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({id, name})
+                });
+
+                const data = await response.json();
+                showMessage(messageDiv, data.message, data.success ? 'success' : 'error');
+
+                if (data.success) {
+                    document.getElementById('addOpId').value = '';
+                    document.getElementById('addOpName').value = '';
+                }
+            } catch (error) {
+                showMessage(messageDiv, 'Error connecting to server', 'error');
+                console.error(error);
+            }
+        }
+
+        async function removeOperator() {
+            const id = document.getElementById('removeOpId').value;
+            const messageDiv = document.getElementById('removeOpMessage');
+
+            if (!id) {
+                showMessage(messageDiv, 'Please enter operator ID!', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/operator/remove`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({id})
+                });
+
+                const data = await response.json();
+                showMessage(messageDiv, data.message, data.success ? 'success' : 'error');
+
+                if (data.success) {
+                    document.getElementById('removeOpId').value = '';
+                }
+            } catch (error) {
+                showMessage(messageDiv, 'Error connecting to server', 'error');
+                console.error(error);
+            }
+        }
+
+        async function showOperatorStatus() {
+            showSection('operatorStatus');
+            await updateOperatorStatus();
+        }
+
+        async function updateOperatorStatus() {
+            try {
+                const response = await fetch(`${API_URL}/operator/status`);
+                const data = await response.json();
+
+                const listDiv = document.getElementById('operatorList');
+
+                if (data.operators.length === 0) {
+                    listDiv.innerHTML = '<p style="text-align: center; color: #666;">No operators added yet.</p>';
+                    return;
+                }
+
+                listDiv.innerHTML = data.operators.map(op => `
+                    <div class="operator-card">
+                        <div class="operator-header">
+                            <span class="operator-id">#${op.id}</span>
+                            <span class="status-badge status-${op.status.toLowerCase()}">${op.status}</span>
+                        </div>
+                        <div class="operator-name">👤 ${op.name}</div>
+                        ${op.status === 'BUSY' ? `<div class="call-time">⏱️ ${op.callTime}s remaining</div>` : ''}
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error fetching operator status:', error);
+            }
+        }
+
+        // ==================== CALL MANAGEMENT ====================
+        async function assignCall() {
+            const duration = document.getElementById('callDuration').value;
+            const messageDiv = document.getElementById('assignCallMessage');
+
+            if (!duration || duration <= 0) {
+                showMessage(messageDiv, 'Please enter valid call duration!', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/call/assign`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({duration: parseInt(duration)})
+                });
+
+                const data = await response.json();
+                showMessage(messageDiv, data.message, 'success');
+
+                if (data.success) {
+                    document.getElementById('callDuration').value = '';
+                }
+            } catch (error) {
+                showMessage(messageDiv, 'Error connecting to server', 'error');
+                console.error(error);
+            }
+        }
+
+        async function showQueueStatus() {
+            showSection('queueStatus');
+            await updateQueueStatus();
+        }
+
+        async function updateQueueStatus() {
+            try {
+                const response = await fetch(`${API_URL}/queue/status`);
+                const data = await response.json();
+
+                const queueDiv = document.getElementById('queueItems');
+
+                if (data.queue.length === 0) {
+                    queueDiv.innerHTML = '<p style="text-align: center; color: #666; width: 100%;">Queue is empty.</p>';
+                    return;
+                }
+
+                queueDiv.innerHTML = data.queue.map((duration, index) => 
+                    `<div class="queue-item">Call #${index + 1}: ${duration}s</div>`
+                ).join('');
+            } catch (error) {
+                console.error('Error fetching queue status:', error);
+            }
+        }
+
+        // ==================== AUTO-UPDATE ====================
+        function startStatusUpdates() {
+            // Update status every 2 seconds
+            statusUpdateInterval = setInterval(() => {
+                const activeSection = document.querySelector('.content-section.active');
+                if (activeSection) {
+                    if (activeSection.id === 'operatorStatus') {
+                        updateOperatorStatus();
+                    } else if (activeSection.id === 'queueStatus') {
+                        updateQueueStatus();
+                    }
+                }
+            }, 2000);
+        }
+
+        function stopStatusUpdates() {
+            if (statusUpdateInterval) {
+                clearInterval(statusUpdateInterval);
+                statusUpdateInterval = null;
+            }
+        }
+
+        // ==================== UTILITIES ====================
+        function showMessage(element, text, type) {
+            element.innerHTML = `<div class="message message-${type}">${text}</div>`;
+            setTimeout(() => element.innerHTML = '', 5000);
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('adminModal');
+            if (event.target === modal) {
+                closeAdminModal();
+            }
+        }
+    </script>
+</body>
+</html>
