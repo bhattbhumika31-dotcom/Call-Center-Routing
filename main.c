@@ -75,11 +75,11 @@ void handle_register() {
     
     printf("\n--- New User Registration ---\n");
     printf("Enter Username: ");
-    scanf("%s", username);
+    scanf(" %63s", username);
     printf("Enter Password: ");
-    scanf("%s", password);
+    scanf(" %63s", password);
     printf("Confirm Password: ");
-    scanf("%s", confirm_pass);
+    scanf(" %63s", confirm_pass);
 
     if (strcmp(password, confirm_pass) != 0) {
         printf("Error: Passwords do not match.\n");
@@ -107,9 +107,9 @@ int handle_login(char *username) {
 
     printf("\n--- User Login ---\n");
     printf("Username: ");
-    scanf("%s", username);
+    scanf(" %63s", username);
     printf("Password: ");
-    scanf("%s", password);
+    scanf(" %63s", password);
 
     if (check_credentials(username, password, CREDENTIALS_FILE)) {
         printf("\nLogin successful. Welcome, %s!\n", username);
@@ -129,7 +129,7 @@ int check_credentials(const char *username, const char *password, const char *fi
     char file_user[MAX_USERNAME];
     char file_pass[MAX_PASSWORD];
     
-    while (fscanf(fp, "%s %s", file_user, file_pass) == 2) {
+    while (fscanf(fp, "%63s %63s", file_user, file_pass) == 2) {
         if (strcmp(username, file_user) == 0) {
             if (password[0] == '\0' || strcmp(password, file_pass) == 0) {
                 fclose(fp);
@@ -150,7 +150,7 @@ void handle_admin_approval() {
     printf("\n--- Admin Authentication ---\n");
     while (attempts < 3) {
         printf("Admin Username: ");
-        scanf("%s", admin_user);
+        scanf(" %63s", admin_user);
         printf("Admin Password (numbers only): ");
         if (scanf("%d", &admin_pass) != 1) { 
              int c; while ((c = getchar()) != '\n' && c != EOF) {} break; 
@@ -187,7 +187,7 @@ void handle_admin_approval() {
     char approval_choice;
     int request_count = 0;
 
-    while (fscanf(fp_pending, "%s %s", username, password) == 2) {
+    while (fscanf(fp_pending, "%63s %63s", username, password) == 2) {
         request_count++;
         printf("\nPending Request #%d:\n", request_count);
         printf("Username: %s\n", username);
@@ -218,7 +218,7 @@ void run_call_center_system() {
     OperatorNode *root = NULL; 
     int choice = 0;
     int Id = 0;
-    int time;
+    int call_time;
     
     printf("\n------------------------------------------\n");
     printf("|  CALL CENTER ROUTING SYSTEM  |\n");
@@ -238,7 +238,12 @@ void run_call_center_system() {
         {
         case 1:
             printf("Enter operator ID: ");
-            if (scanf("%d", &Id) == 1) addOperator(&root, Id);
+            if (scanf("%d", &Id) == 1) {
+                char name[64];
+                printf("Enter operator name: ");
+                scanf(" %63s", name);
+                addOperator(&root, Id, name);
+            }
             else { int c; while ((c = getchar()) != '\n' && c != EOF) {} printf("Invalid ID.\n"); }
             break;
         case 2:
@@ -251,14 +256,16 @@ void run_call_center_system() {
             break;
         case 4:
             printf("Enter call timing: ");
-            scanf("%d",&time);
-            assignCall(&root,time);
+            if (scanf("%d", &call_time) == 1) {
+                assignCall(&root, call_time);
+            } else { int c; while ((c = getchar()) != '\n' && c != EOF) {} printf("Invalid timing.\n"); }
             break;
         case 5:
             display();
             break;
         case 6:
-            while (root) { OperatorNode *tmp = root; root = root->next; free(tmp); }
+            free_tree(root);
+            root = NULL;
             printf("\nLogged out. Returning to access menu.\n");
             return; 
         default:

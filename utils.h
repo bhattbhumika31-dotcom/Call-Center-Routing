@@ -13,6 +13,8 @@ void display();
 int isQueueNotEmpty(); 
 
 // --- Queue Reassignment Logic ---
-void attempt_reassign_from_queue(OperatorNode *freed_operator); 
+// Attempts to assign a waiting call to the freed operator.
+// Returns 1 if a call was assigned, 0 if queue was empty or not assigned.
+int attempt_reassign_from_queue(OperatorNode *freed_operator); 
 
 #endif // UTILS_H

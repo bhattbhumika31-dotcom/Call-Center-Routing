@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Center Management System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Login Page -->
+        <div class="login-container" id="loginPage">
+            <div class="login-header">
+                <h1>📞 Call Center System</h1>
+                <p>Routing & Management Platform</p>
+            </div>
+            <div class="login-body">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+                    <button class="tab-btn" onclick="switchTab('register')">Register</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="loginUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="submit-btn" id="loginBtn">Login</button>
+                </form>
+
+                <!-- Register Form -->
+                <form id="registerForm" class="hidden" onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="regUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="regPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <input type="password" id="regConfirmPassword" required>
+                    </div>
+                    <button type="submit" class="submit-btn" id="registerBtn">Register</button>
+                </form>
+
+                <div class="admin-link" onclick="showAdminModal()">
+                    Admin Approval Portal →
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div class="dashboard" id="dashboard">
+            <div class="dashboard-header">
+                <h1>📞 Call Center Dashboard</h1>
+                <div class="user-info">
+                    <span>Welcome, <strong id="currentUser">User</strong></span>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </div>
+            <div class="dashboard-body">
+                <div class="action-panel">
+                    <button class="action-btn btn-add" onclick="showSection('addOperator')">➕ Add Operator</button>
+                    <button class="action-btn btn-remove" onclick="showSection('removeOperator')">➖ Remove Operator</button>
+                    <button class="action-btn btn-status" onclick="showOperatorStatus()">📊 Operator Status</button>
+                    <button class="action-btn btn-assign" onclick="showSection('assignCall')">📞 Assign Call</button>
+                    <button class="action-btn btn-queue" onclick="showQueueStatus()">⏳ Queue Status</button>
+                </div>
+
+                <!-- Add Operator Section -->
+                <div class="content-section" id="addOperator">
+                    <h2>➕ Add New Operator</h2>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Operator ID</label>
+                            <input type="text" id="addOpId" placeholder="Enter ID">
+                        </div>
+                        <div class="input-group">
+                            <label>Operator Name</label>
+                            <input type="text" id="addOpName" placeholder="Enter name">
+                        </div>
+                        <button class="execute-btn" onclick="addOperator()">Add</button>
+                    </div>
+                    <div id="addOpMessage"></div>
+                </div>
+
+                <!-- Remove Operator Section -->
+                <div class="content-section" id="removeOperator">
+                    <h2>➖ Remove Operator</h2>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Operator ID</label>
+                            <input type="text" id="removeOpId" placeholder="Enter ID to remove">
+                        </div>
+                        <button class="execute-btn" onclick="removeOperator()">Remove</button>
+                    </div>
+                    <div id="removeOpMessage"></div>
+                </div>
+
+                <!-- Assign Call Section -->
+                <div class="content-section" id="assignCall">
+                    <h2>📞 Assign Call</h2>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Call Duration (seconds)</label>
+                            <input type="number" id="callDuration" placeholder="Enter duration" min="1">
+                        </div>
+                        <button class="execute-btn" onclick="assignCall()">Assign</button>
+                    </div>
+                    <div id="assignCallMessage"></div>
+                </div>
+
+                <!-- Operator Status Section -->
+                <div class="content-section" id="operatorStatus">
+                    <h2>📊 Operator Status</h2>
+                    <div class="operator-list" id="operatorList"></div>
+                </div>
+
+                <!-- Queue Status Section -->
+                <div class="content-section" id="queueStatus">
+                    <h2>⏳ Call Queue Status</h2>
+                    <div class="queue-display">
+                        <h3>Waiting Calls</h3>
+                        <div class="queue-items" id="queueItems"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Modal -->
+    <div class="modal" id="adminModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>👨‍💼 Admin Approval Portal</h2>
+                <button class="close-btn" onclick="closeAdminModal()">×</button>
+            </div>
+            
+            <div id="adminLoginSection">
+                <form onsubmit="handleAdminLogin(event)">
+                    <div class="form-group">
+                        <label>Admin Username</label>
+                        <input type="text" id="adminUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Admin Password</label>
+                        <input type="password" id="adminPassword" required>
+                    </div>
+                    <button type="submit" class="submit-btn">Access Admin Panel</button>
+                </form>
+            </div>
+
+            <div id="adminPanelSection" class="hidden">
+                <h3>Pending User Registrations</h3>
+                <div id="pendingUsersList"></div>
+            </div>
+        </div>
+    </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
