@@ -1,6 +1,6 @@
 # 📞 Call Center Management System
 
-A modern, full-stack call center routing and management platform built with C backend and a beautiful web frontend.
+A modern, full-stack call center routing and management platform built with C backend.
 
 ## 🌟 Features
 
